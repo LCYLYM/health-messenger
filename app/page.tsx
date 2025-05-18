@@ -19,9 +19,10 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                您可以使用我们的默认网站列表，或添加您自己关注的网站，创建一个检测链接。
+                您可以使用我们的真实网站数据库（包含成人内容、社交媒体、视频平台等各分类的真实网站），创建一个检测链接。
               </p>
-              <p className="text-gray-600">当有人打开您的链接时，我们可以检测他们是否访问过这些网站。</p>
+              <p className="text-gray-600 mb-4">当有人打开您的链接时，系统会立即自动开始检测并实时保存结果，无需手动点击开始。</p>
+              <p className="text-gray-600"><strong>实时检测：</strong> 您可以在结果页面实时查看检测进度和结果，每秒自动刷新，无需等待检测完成。</p>
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full bg-green-600 hover:bg-green-700">
@@ -37,7 +38,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">如果您已经创建了检测链接并分享给了他人，您可以在这里查看检测结果。</p>
-              <p className="text-gray-600">输入您的检测ID，查看哪些网站被访问过。</p>
+              <p className="text-gray-600 mb-4">输入您的检测ID，实时查看检测进度和哪些网站被访问过，系统会自动每秒刷新最新结果。</p>
+              <p className="text-gray-600"><strong>动态更新：</strong> 检测结果会实时更新，包括检测进度百分比和已检测到的网站数量，无需等待检测完成即可查看。</p>
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full bg-green-600 hover:bg-green-700">
