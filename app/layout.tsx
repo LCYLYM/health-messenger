@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "健康使者 - 帮助家长发现青少年是否浏览不良网站",
   description: "健康使者是一个帮助家长发现青少年是否浏览不良网站的工具，通过检测浏览历史来保护青少年健康上网。",
-    generator: '生🐟'
+  generator: "生🐟",
 }
 
 export default function RootLayout({

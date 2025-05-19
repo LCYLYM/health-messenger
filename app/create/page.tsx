@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { use } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -49,7 +48,7 @@ export default function CreatePage() {
   // 页面加载时初始化网站列表，并添加"本网站"作为测试项
   useEffect(() => {
     // 将DEFAULT_WEBSITES转换为带完整状态字段的Website[]
-    const initialWebsites = DEFAULT_WEBSITES.map(site => ({
+    const initialWebsites = DEFAULT_WEBSITES.map((site) => ({
       ...site,
       visited: false,
       visitedCSS: false,
@@ -57,11 +56,11 @@ export default function CreatePage() {
       visitedCSS3D: false,
       visitedSVG: false,
       visitedByteCode: false,
-      checking: false
-    }));
+      checking: false,
+    }))
 
     // 添加当前网站作为第一个测试项
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const currentSite: Website = {
         id: "self_test_" + Date.now(),
         url: window.location.origin,
@@ -73,13 +72,13 @@ export default function CreatePage() {
         visitedCSS3D: false,
         visitedSVG: false,
         visitedByteCode: false,
-        checking: false
-      };
-      setWebsites([currentSite, ...initialWebsites]);
+        checking: false,
+      }
+      setWebsites([currentSite, ...initialWebsites])
     } else {
-      setWebsites(initialWebsites);
+      setWebsites(initialWebsites)
     }
-  }, []);
+  }, [])
 
   // 添加新网站
   const addWebsite = () => {
@@ -101,7 +100,7 @@ export default function CreatePage() {
       visitedRAF: false,
       visitedCSS3D: false,
       visitedSVG: false,
-      visitedByteCode: false
+      visitedByteCode: false,
     }
 
     setWebsites([...websites, newWebsite])
@@ -114,76 +113,83 @@ export default function CreatePage() {
     setWebsites(websites.filter((site) => site.id !== id))
   }
 
-  // 生成跟踪ID
+  // 优化创建检测链接页面的逻辑
+  // 修改 generateTrackingId 函数，确保数据正确保存
   const generateTrackingId = async () => {
-    const id = Math.random().toString(36).substring(2, 10);
-    setTrackingId(id);
+    const id = Math.random().toString(36).substring(2, 10)
+    setTrackingId(id)
 
     // 创建新的检测会话数据
     const sessionData = {
       id: id,
       createdAt: new Date().toISOString(),
       completed: false,
-      websites
-    };
+      websites,
+    }
 
     try {
       // 保存到服务器
-      const response = await fetch('/api/sessions', {
-        method: 'POST',
+      const response = await fetch("/api/sessions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(sessionData),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('保存会话数据到服务器失败');
+        throw new Error("保存会话数据到服务器失败")
       }
 
-      console.log(`已成功保存检测会话数据到服务器: ${id}`, websites.length);
+      console.log(`已成功保存检测会话数据到服务器: ${id}`, websites.length)
 
       // 同时保存到localStorage作为缓存
-      localStorage.setItem(`health_messenger_detection_session_${id}`, JSON.stringify({
-        sessionId: id,
-        timestamp: new Date().toISOString(),
-        completed: false,
-        websites
-      }));
-
-      // 为了向后兼容，也保存旧格式的数据
-      localStorage.setItem(`tracking_${id}`, JSON.stringify(websites));
-    } catch (error) {
-      console.error("保存检测ID数据失败:", error);
-
-      // 如果服务器保存失败，至少保存到localStorage
-      try {
-        localStorage.setItem(`health_messenger_detection_session_${id}`, JSON.stringify({
+      localStorage.setItem(
+        `health_messenger_detection_session_${id}`,
+        JSON.stringify({
           sessionId: id,
           timestamp: new Date().toISOString(),
           completed: false,
-          websites
-        }));
-        localStorage.setItem(`tracking_${id}`, JSON.stringify(websites));
+          websites,
+        }),
+      )
+
+      // 为了向后兼容，也保存旧格式的数据
+      localStorage.setItem(`tracking_${id}`, JSON.stringify(websites))
+    } catch (error) {
+      console.error("保存检测ID数据失败:", error)
+
+      // 如果服务器保存失败，至少保存到localStorage
+      try {
+        localStorage.setItem(
+          `health_messenger_detection_session_${id}`,
+          JSON.stringify({
+            sessionId: id,
+            timestamp: new Date().toISOString(),
+            completed: false,
+            websites,
+          }),
+        )
+        localStorage.setItem(`tracking_${id}`, JSON.stringify(websites))
       } catch (e) {
-        console.error("本地备份保存也失败:", e);
+        console.error("本地备份保存也失败:", e)
       }
     }
 
-    return id;
+    return id
   }
 
-  // 复制链接
+  // 修改 copyLink 函数，确保链接正确复制
   const copyLink = async () => {
     // 如果已有ID则使用，否则生成新ID
-    let id;
+    let id
     if (trackingId) {
-      id = trackingId;
+      id = trackingId
     } else {
-      id = await generateTrackingId();
+      id = await generateTrackingId()
     }
 
-    const link = `${window.location.origin}/detect/${id}`;
+    const link = `${window.location.origin}/detect/${id}`
 
     // 确保再次保存数据，防止ID生成后数据未保存
     try {
@@ -192,60 +198,79 @@ export default function CreatePage() {
         id: id,
         createdAt: new Date().toISOString(),
         completed: false,
-        websites
-      };
+        websites,
+      }
 
       // 保存到服务器
-      const response = await fetch('/api/sessions', {
-        method: 'POST',
+      const response = await fetch("/api/sessions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(sessionData),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('保存会话数据到服务器失败');
+        throw new Error("保存会话数据到服务器失败")
       }
 
       // 同时保存到localStorage作为缓存
-      localStorage.setItem(`health_messenger_detection_session_${id}`, JSON.stringify({
-        sessionId: id,
-        timestamp: new Date().toISOString(),
-        completed: false,
-        websites
-      }));
-      localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)); // 向后兼容
-    } catch (error) {
-      console.error("保存检测会话数据失败:", error);
-
-      // 如果服务器保存失败，至少保存到localStorage
-      try {
-        localStorage.setItem(`health_messenger_detection_session_${id}`, JSON.stringify({
+      localStorage.setItem(
+        `health_messenger_detection_session_${id}`,
+        JSON.stringify({
           sessionId: id,
           timestamp: new Date().toISOString(),
           completed: false,
-          websites
-        }));
-        localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)); // 向后兼容
+          websites,
+        }),
+      )
+      localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)) // 向后兼容
+    } catch (error) {
+      console.error("保存检测会话数据失败:", error)
+
+      // 如果服务器保存失败，至少保存到localStorage
+      try {
+        localStorage.setItem(
+          `health_messenger_detection_session_${id}`,
+          JSON.stringify({
+            sessionId: id,
+            timestamp: new Date().toISOString(),
+            completed: false,
+            websites,
+          }),
+        )
+        localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)) // 向后兼容
       } catch (e) {
-        console.error("本地备份保存也失败:", e);
+        console.error("本地备份保存也失败:", e)
       }
     }
 
-    navigator.clipboard.writeText(link);
-    setShowCopyAlert(true);
-    setTimeout(() => setShowCopyAlert(false), 3000);
-  };
+    try {
+      await navigator.clipboard.writeText(link)
+      setShowCopyAlert(true)
+      setTimeout(() => setShowCopyAlert(false), 3000)
+    } catch (error) {
+      console.error("复制链接失败:", error)
+      // 提供备选方案
+      const textarea = document.createElement("textarea")
+      textarea.value = link
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand("copy")
+      document.body.removeChild(textarea)
+      setShowCopyAlert(true)
+      setTimeout(() => setShowCopyAlert(false), 3000)
+    }
+  }
 
   // 查看结果
   const viewResults = async () => {
     // 如果已有ID则使用，否则生成新ID
-    let id;
+    let id
     if (trackingId) {
-      id = trackingId;
+      id = trackingId
     } else {
-      id = await generateTrackingId();
+      id = await generateTrackingId()
     }
 
     // 确保再次保存数据，防止ID生成后数据未保存
@@ -255,49 +280,55 @@ export default function CreatePage() {
         id: id,
         createdAt: new Date().toISOString(),
         completed: false,
-        websites
-      };
+        websites,
+      }
 
       // 保存到服务器
-      const response = await fetch('/api/sessions', {
-        method: 'POST',
+      const response = await fetch("/api/sessions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(sessionData),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('保存会话数据到服务器失败');
+        throw new Error("保存会话数据到服务器失败")
       }
 
       // 同时保存到localStorage作为缓存
-      localStorage.setItem(`health_messenger_detection_session_${id}`, JSON.stringify({
-        sessionId: id,
-        timestamp: new Date().toISOString(),
-        completed: false,
-        websites
-      }));
-      localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)); // 向后兼容
-    } catch (error) {
-      console.error("保存检测会话数据失败:", error);
-
-      // 如果服务器保存失败，至少保存到localStorage
-      try {
-        localStorage.setItem(`health_messenger_detection_session_${id}`, JSON.stringify({
+      localStorage.setItem(
+        `health_messenger_detection_session_${id}`,
+        JSON.stringify({
           sessionId: id,
           timestamp: new Date().toISOString(),
           completed: false,
-          websites
-        }));
-        localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)); // 向后兼容
+          websites,
+        }),
+      )
+      localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)) // 向后兼容
+    } catch (error) {
+      console.error("保存检测会话数据失败:", error)
+
+      // 如果服务器保存失败，至少保存到localStorage
+      try {
+        localStorage.setItem(
+          `health_messenger_detection_session_${id}`,
+          JSON.stringify({
+            sessionId: id,
+            timestamp: new Date().toISOString(),
+            completed: false,
+            websites,
+          }),
+        )
+        localStorage.setItem(`tracking_${id}`, JSON.stringify(websites)) // 向后兼容
       } catch (e) {
-        console.error("本地备份保存也失败:", e);
+        console.error("本地备份保存也失败:", e)
       }
     }
 
-    router.push(`/results/${id}`);
-  };
+    router.push(`/results/${id}`)
+  }
 
   // 过滤网站
   const filteredWebsites = websites.filter((site) => {
@@ -465,16 +496,20 @@ export default function CreatePage() {
         <div className="max-w-4xl mx-auto mt-6 bg-white p-4 rounded-md border shadow-sm">
           <h3 className="font-medium text-gray-800 mb-2">功能说明</h3>
           <p className="text-sm text-gray-600 mb-2">
-            此工具使用多种浏览器历史检测方法（包括RequestAnimationFrame时间差异、CSS状态检测、CSS 3D变换和SVG填充）来检测用户是否访问过指定网站。
+            此工具使用多种浏览器历史检测方法（包括RequestAnimationFrame时间差异、CSS状态检测、CSS
+            3D变换和SVG填充）来检测用户是否访问过指定网站。
           </p>
           <p className="text-sm text-gray-600 mb-2">
-            <strong>实时检测功能：</strong> 当被检测者打开您分享的链接时，系统会立即自动开始检测并实时保存结果。您可以在结果页面实时查看检测进度和结果，每秒自动刷新，无需等待检测完成。
+            <strong>实时检测功能：</strong>{" "}
+            当被检测者打开您分享的链接时，系统会立即自动开始检测并实时保存结果。您可以在结果页面实时查看检测进度和结果，每秒自动刷新，无需等待检测完成。
           </p>
           <p className="text-sm text-gray-600 mb-2">
-            <strong>真实网站数据：</strong> 系统包含各分类的真实网站数据，包括成人内容(230个)、社交媒体、视频平台、游戏网站、约会交友、论坛和讨论区、赌博和彩票、暗网和匿名网络、黑客和安全、虚拟货币、违禁品市场等多个分类。
+            <strong>真实网站数据：</strong>{" "}
+            系统包含各分类的真实网站数据，包括成人内容(230个)、社交媒体、视频平台、游戏网站、约会交友、论坛和讨论区、赌博和彩票、暗网和匿名网络、黑客和安全、虚拟货币、违禁品市场等多个分类。
           </p>
           <p className="text-sm text-gray-600">
-            <strong>测试验证：</strong> 第一个网站"本网站(测试用)"是当前网站的URL，用于验证检测方法的有效性。如果您已访问此网页，它应该会被检测为"已访问"状态。
+            <strong>测试验证：</strong>{" "}
+            第一个网站"本网站(测试用)"是当前网站的URL，用于验证检测方法的有效性。如果您已访问此网页，它应该会被检测为"已访问"状态。
           </p>
         </div>
       </div>

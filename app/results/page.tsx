@@ -38,80 +38,77 @@ export default function ResultsPage() {
       try {
         // 首先尝试从服务器加载数据
         try {
-          const response = await fetch('/api/sessions');
+          const response = await fetch("/api/sessions")
 
           if (response.ok) {
-            const serverSessions = await response.json();
-            console.log('成功从服务器加载会话数据:', serverSessions.length);
+            const serverSessions = await response.json()
+            console.log("成功从服务器加载会话数据:", serverSessions.length)
 
             // 转换为应用中使用的格式
             const formattedSessions: DetectionSessionData[] = serverSessions.map((session: any) => ({
               sessionId: session.id,
-              timestamp: session.createdAt,
-              completed: session.completed,
-              websites: session.websites
-            }));
+              timestamp: session.createdAt || new Date().toISOString(),
+              completed: session.completed || false,
+              websites: session.websites || [],
+            }))
 
             // 按时间倒序排序
-            formattedSessions.sort((a, b) =>
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-            );
+            formattedSessions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
-            setSessions(formattedSessions);
-            setLoading(false);
-            return;
+            setSessions(formattedSessions)
+            setLoading(false)
+            return
           }
         } catch (serverError) {
-          console.error("从服务器加载数据失败，尝试从本地缓存加载:", serverError);
+          console.error("从服务器加载数据失败，尝试从本地缓存加载:", serverError)
         }
 
         // 如果服务器加载失败，尝试从本地缓存加载
-        const allSessions: DetectionSessionData[] = [];
+        const allSessions: DetectionSessionData[] = []
 
         // 检查localStorage中的所有键
         for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
+          const key = localStorage.key(i)
 
           // 找到所有检测会话数据
-          if (key && key.startsWith('health_messenger_detection_session_')) {
+          if (key && key.startsWith("health_messenger_detection_session_")) {
             try {
-              const sessionDataStr = localStorage.getItem(key);
+              const sessionDataStr = localStorage.getItem(key)
               if (sessionDataStr) {
-                const sessionData = JSON.parse(sessionDataStr) as DetectionSessionData;
-                allSessions.push(sessionData);
+                const sessionData = JSON.parse(sessionDataStr) as DetectionSessionData
+                allSessions.push(sessionData)
               }
             } catch (e) {
-              console.error(`解析会话数据失败: ${key}`, e);
+              console.error(`解析会话数据失败: ${key}`, e)
             }
           }
         }
 
         // 按时间倒序排序
-        allSessions.sort((a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
+        allSessions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
-        setSessions(allSessions);
+        setSessions(allSessions)
       } catch (error) {
-        console.error("加载检测会话数据失败:", error);
-        setError("加载会话数据失败");
+        console.error("加载检测会话数据失败:", error)
+        setError("加载会话数据失败")
       }
 
-      setLoading(false);
-    };
+      setLoading(false)
+    }
 
-    loadAllSessions();
-  }, []);
+    loadAllSessions()
+  }, [])
 
   // 过滤会话
-  const filteredSessions = sessions.filter(session => {
+  const filteredSessions = sessions.filter((session) => {
     if (!searchTerm) return true
     return (
       session.sessionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       new Date(session.timestamp).toLocaleString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-      session.websites.some(site =>
-        site.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        site.url.toLowerCase().includes(searchTerm.toLowerCase())
+      session.websites.some(
+        (site) =>
+          site.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          site.url.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     )
   })
@@ -130,32 +127,32 @@ export default function ResultsPage() {
         // 首先尝试从服务器删除
         try {
           const response = await fetch(`/api/sessions?id=${sessionId}`, {
-            method: 'DELETE',
-          });
+            method: "DELETE",
+          })
 
           if (response.ok) {
-            console.log(`成功从服务器删除会话: ${sessionId}`);
+            console.log(`成功从服务器删除会话: ${sessionId}`)
           } else {
-            console.error(`从服务器删除会话失败: ${sessionId}`);
+            console.error(`从服务器删除会话失败: ${sessionId}`)
           }
         } catch (serverError) {
-          console.error("从服务器删除会话失败:", serverError);
+          console.error("从服务器删除会话失败:", serverError)
         }
 
         // 同时从本地缓存删除
         // 删除新格式会话数据
-        localStorage.removeItem(`health_messenger_detection_session_${sessionId}`);
+        localStorage.removeItem(`health_messenger_detection_session_${sessionId}`)
 
         // 删除旧格式数据(向后兼容)
-        localStorage.removeItem(`tracking_${sessionId}`);
-        localStorage.removeItem(`websites_${sessionId}`);
-        localStorage.removeItem(`result_${sessionId}`);
+        localStorage.removeItem(`tracking_${sessionId}`)
+        localStorage.removeItem(`websites_${sessionId}`)
+        localStorage.removeItem(`result_${sessionId}`)
 
         // 更新会话列表
-        setSessions(sessions.filter(s => s.sessionId !== sessionId));
+        setSessions(sessions.filter((s) => s.sessionId !== sessionId))
       } catch (error) {
-        console.error("删除会话失败:", error);
-        setError("删除会话失败");
+        console.error("删除会话失败:", error)
+        setError("删除会话失败")
       }
     }
   }
@@ -178,20 +175,14 @@ export default function ResultsPage() {
         <Card className="max-w-4xl mx-auto shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl text-green-700">检测结果管理</CardTitle>
-            <CardDescription>
-              查看和管理您创建的所有检测会话
-            </CardDescription>
+            <CardDescription>查看和管理您创建的所有检测会话</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
-                  <Input
-                    placeholder="搜索会话..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                  <Input placeholder="搜索会话..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -237,7 +228,10 @@ export default function ResultsPage() {
                 <h3 className="text-lg font-medium mb-3">您的检测会话 ({filteredSessions.length})</h3>
                 <div className="grid gap-4 max-h-[500px] overflow-y-auto">
                   {filteredSessions.map((session) => (
-                    <div key={session.sessionId} className="bg-white p-4 rounded-md border hover:shadow-md transition-shadow">
+                    <div
+                      key={session.sessionId}
+                      className="bg-white p-4 rounded-md border hover:shadow-md transition-shadow"
+                    >
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="font-medium flex items-center gap-2">
@@ -253,7 +247,7 @@ export default function ResultsPage() {
                             <span className="text-gray-600">检测网站: {session.websites.length}个</span>
                             {session.completed && (
                               <span className="ml-3 text-green-600">
-                                已访问: {session.websites.filter(site => site.visited).length}个
+                                已访问: {session.websites.filter((site) => site.visited).length}个
                               </span>
                             )}
                           </div>
@@ -267,12 +261,7 @@ export default function ResultsPage() {
                           >
                             <TrashIcon className="h-5 w-5" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-500 hover:text-gray-700"
-                            asChild
-                          >
+                          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700" asChild>
                             <Link href={`/results/${session.sessionId}`}>
                               <ArrowRight className="h-5 w-5" />
                             </Link>
@@ -282,9 +271,7 @@ export default function ResultsPage() {
                     </div>
                   ))}
                   {filteredSessions.length === 0 && searchTerm && (
-                    <div className="text-center py-6 text-gray-500">
-                      没有找到匹配的检测会话
-                    </div>
+                    <div className="text-center py-6 text-gray-500">没有找到匹配的检测会话</div>
                   )}
                 </div>
               </div>
